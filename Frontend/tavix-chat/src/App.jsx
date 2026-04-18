@@ -1,9 +1,12 @@
 import React from "react";
+import Theme from "./Components/Theme";
+import Login from "./Pages/Login";
 
 const App = () => {
   return (
-    <div>
-      <p className="text-5xl font-medium">Hello Welcome to React Tavix APP</p>
+    <div className="min-h-screen bg-gray">
+      {/* <Theme /> */}
+      <Login />
     </div>
   );
 };
