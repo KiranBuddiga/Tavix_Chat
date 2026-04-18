@@ -4,8 +4,10 @@ dotenv.config();
 const express = require("express");
 const app = express();
 const dbConnection = require("./utils/dbConnection");
+const userRoutes = require("./routes/userRoutes");
 
 const PORT = process.env.PORT || 2777;
+app.use(express.json())
 
 dbConnection
   .then(() => {
@@ -17,3 +19,5 @@ dbConnection
   .catch((err) => {
     console.log("Database connection failed", err);
   });
+
+app.use("/auth", userRoutes);
