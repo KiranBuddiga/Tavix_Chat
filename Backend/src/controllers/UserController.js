@@ -5,8 +5,8 @@ const jwt = require("jsonwebtoken");
 
 const insertUser = async (req, res) => {
   try {
-    const { USER_NAME, EMAIL, PASSWORD } = req.body;
-    if (!USER_NAME || !EMAIL || !PASSWORD) {
+    const { FIRST_NAME, LAST_NAME, EMAIL, PASSWORD } = req.body;
+    if (!FIRST_NAME || !LAST_NAME || !EMAIL || !PASSWORD) {
       return res.status(400).json({ message: "Required Fields are missing" });
     }
     const existingUser = await User.findOne({ EMAIL });
@@ -15,12 +15,13 @@ const insertUser = async (req, res) => {
     }
     const hashedPassword = await bcrypt.hash(PASSWORD, 10);
     const newUser = await new User({
-      USER_NAME,
+      FIRST_NAME,
+      LAST_NAME,
       EMAIL,
       PASSWORD: hashedPassword,
     });
     await newUser.save();
-    await sendMail(EMAIL, USER_NAME);
+    await sendMail(EMAIL, FIRST_NAME);
     return res
       .status(201)
       .json({ message: "User Created Successfull", newUser });
@@ -58,12 +59,13 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       {
         _id: existingUser?._id,
-        userName: existingUser?.USER_NAME,
+        firstName: existingUser?.FIRST_NAME,
+        lastName: existingUser?.LAST_NAME,
         email: existingUser?.EMAIL,
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "2m",
+        expiresIn: "2d",
       },
     );
     const refreshToken = jwt.sign(
@@ -72,20 +74,20 @@ const loginUser = async (req, res) => {
       },
       process.env.REFRESH_JWT_SECRET,
       {
-        expiresIn: "5m",
+        expiresIn: "7d",
       },
     );
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 2 * 60 * 1000,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 5 * 60 * 1000,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     return res
       .status(200)
@@ -115,7 +117,8 @@ const logoutUser = async (req, res) => {
 
 const getUserDetails = async (req, res) => {
   try {
-    const user = req.user;
+    const userId = req.user?._id;
+    const user = await User.findById(userId);
     return res.status(200).json({ message: "Success", user });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });

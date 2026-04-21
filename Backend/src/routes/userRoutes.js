@@ -9,8 +9,8 @@ const authmiddleware = require("../middlewares/authmiddleware");
 const router = express.Router();
 
 router.post("/register", insertUser);
-router.get("/login", loginUser);
-router.get("/userDetails", authmiddleware, getUserDetails);
-router.get("/logout", logoutUser);
+router.post("/login", loginUser);
+router.post("/userDetails", authmiddleware, getUserDetails);
+router.post("/logout", logoutUser);
 
 module.exports = router;
